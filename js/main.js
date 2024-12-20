@@ -163,7 +163,7 @@ function loadData() {
 // API functions for MongoDB
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3001/api'
-    : 'https://your-render-app-name.onrender.com/api'; // This will be your Render.com URL
+    : 'https://hesabat.onrender.com/api'; // Your Render.com URL
 
 // Customer functions
 async function saveCustomer(customer) {
