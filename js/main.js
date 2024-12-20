@@ -160,6 +160,68 @@ function loadData() {
     if (savedProfit) profit = JSON.parse(savedProfit);
 }
 
+// API functions for MongoDB
+const API_URL = 'http://localhost:3001/api';
+
+// Customer functions
+async function saveCustomer(customer) {
+    const response = await fetch(`${API_URL}/customers`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customer)
+    });
+    return await response.json();
+}
+
+async function getCustomers() {
+    const response = await fetch(`${API_URL}/customers`);
+    return await response.json();
+}
+
+// Transaction functions
+async function saveTransaction(transaction) {
+    const response = await fetch(`${API_URL}/transactions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transaction)
+    });
+    return await response.json();
+}
+
+async function getTransactions(customerId) {
+    const response = await fetch(`${API_URL}/transactions/${customerId}`);
+    return await response.json();
+}
+
+// Money transaction functions
+async function saveMoneyTransaction(transaction) {
+    const response = await fetch(`${API_URL}/money-transactions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transaction)
+    });
+    return await response.json();
+}
+
+async function getMoneyTransactions(customerId) {
+    const response = await fetch(`${API_URL}/money-transactions/${customerId}`);
+    return await response.json();
+}
+
+// Export functions
+window.saveCustomer = saveCustomer;
+window.getCustomers = getCustomers;
+window.saveTransaction = saveTransaction;
+window.getTransactions = getTransactions;
+window.saveMoneyTransaction = saveMoneyTransaction;
+window.getMoneyTransactions = getMoneyTransactions;
+
 // Initialize
 loadData();
 renderCustomers();

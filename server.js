@@ -1,87 +1,112 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const fs = require('fs').promises;
 const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
+// Replace with your MongoDB connection string
+const MONGODB_URI = 'mongodb+srv://rohani:rohani2024/2/8@cluster0.2ywo8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+
+// Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname)));
 
-// Ensure customers directory exists
-async function ensureCustomersDir() {
-    const customersDir = path.join(__dirname, 'public', 'customers');
+// MongoDB Connection
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
+
+// MongoDB Schemas
+const customerSchema = new mongoose.Schema({
+    name: String,
+    address: String,
+    notes: String,
+    createdAt: { type: Date, default: Date.now }
+});
+
+const transactionSchema = new mongoose.Schema({
+    customerId: String,
+    type: String, // 'rec' or 'send'
+    value: Number,
+    date: Date,
+    notes: String
+});
+
+const moneyTransactionSchema = new mongoose.Schema({
+    customerId: String,
+    type: String, // 'rec' or 'send'
+    amount: Number,
+    currency: String, // 'AFN' or 'USD'
+    date: Date,
+    notes: String
+});
+
+const Customer = mongoose.model('Customer', customerSchema);
+const Transaction = mongoose.model('Transaction', transactionSchema);
+const MoneyTransaction = mongoose.model('MoneyTransaction', moneyTransactionSchema);
+
+// API Routes
+app.get('/api/customers', async (req, res) => {
     try {
-        await fs.access(customersDir);
-    } catch {
-        await fs.mkdir(customersDir, { recursive: true });
-    }
-    return customersDir;
-}
-
-// Create customer pages
-app.post('/create-page', async (req, res) => {
-    try {
-        const { customerId, gContent, mContent } = req.body;
-        const customersDir = await ensureCustomersDir();
-
-        // Write G page
-        await fs.writeFile(
-            path.join(customersDir, `${customerId}_g.html`),
-            gContent,
-            'utf8'
-        );
-
-        // Write M page
-        await fs.writeFile(
-            path.join(customersDir, `${customerId}_m.html`),
-            mContent,
-            'utf8'
-        );
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error creating pages:', error);
-        res.status(500).json({ error: 'Failed to create pages' });
+        const customers = await Customer.find();
+        res.json(customers);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// Delete customer pages
-app.delete('/delete-pages/:customerId', async (req, res) => {
+app.post('/api/customers', async (req, res) => {
     try {
-        const { customerId } = req.params;
-        const customersDir = await ensureCustomersDir();
+        const customer = new Customer(req.body);
+        await customer.save();
+        res.status(201).json(customer);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
-        // Delete G page
-        try {
-            await fs.unlink(path.join(customersDir, `${customerId}_g.html`));
-        } catch (e) {
-            console.log('G page not found:', e);
-        }
+app.get('/api/transactions/:customerId', async (req, res) => {
+    try {
+        const transactions = await Transaction.find({ customerId: req.params.customerId });
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
-        // Delete M page
-        try {
-            await fs.unlink(path.join(customersDir, `${customerId}_m.html`));
-        } catch (e) {
-            console.log('M page not found:', e);
-        }
+app.post('/api/transactions', async (req, res) => {
+    try {
+        const transaction = new Transaction(req.body);
+        await transaction.save();
+        res.status(201).json(transaction);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting pages:', error);
-        res.status(500).json({ error: 'Failed to delete pages' });
+app.get('/api/money-transactions/:customerId', async (req, res) => {
+    try {
+        const transactions = await MoneyTransaction.find({ customerId: req.params.customerId });
+        res.json(transactions);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/money-transactions', async (req, res) => {
+    try {
+        const transaction = new MoneyTransaction(req.body);
+        await transaction.save();
+        res.status(201).json(transaction);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
 // Start server
-app.listen(port, async () => {
-    try {
-        const customersDir = await ensureCustomersDir();
-        console.log('Customers directory ready:', customersDir);
-        console.log(`Server running at http://localhost:${port}`);
-    } catch (err) {
-        console.error('Error during startup:', err);
-    }
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

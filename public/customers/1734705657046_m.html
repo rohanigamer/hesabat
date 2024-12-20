@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M Page - بیت الله</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="header">
+            <h1>Money Transactions - بیت الله</h1>
+            <div class="nav-buttons">
+                <a href="../index.html" class="nav-link">← Dashboard</a>
+                <a href="../customers.html" class="nav-link">← Back to Customers</a>
+                <a href="1734705657046_g.html" class="switch-page-btn">
+                    <i class="bi bi-coin"></i> Switch to Gold Page
+                </a>
+            </div>
+        </div>
+
+        <div class="summary-cards">
+            <div class="card summary-card balance">
+                <div class="card-body">
+                    <h5 class="card-title">Balance</h5>
+                    <div class="currency-amounts">
+                        <p class="card-amount"><span id="balanceAFN">0</span> AFN</p>
+                        <p class="card-amount"><span id="balanceUSD">0</span> USD</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card summary-card received">
+                <div class="card-body">
+                    <h5 class="card-title">Total Received</h5>
+                    <div class="currency-amounts">
+                        <p class="card-amount"><span id="totalReceivedAFN">0</span> AFN</p>
+                        <p class="card-amount"><span id="totalReceivedUSD">0</span> USD</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card summary-card sent">
+                <div class="card-body">
+                    <h5 class="card-title">Total Sent</h5>
+                    <div class="currency-amounts">
+                        <p class="card-amount"><span id="totalSentAFN">0</span> AFN</p>
+                        <p class="card-amount"><span id="totalSentUSD">0</span> USD</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="addEntryBtn" class="btn btn-primary action-button">
+            <i class="bi bi-plus-lg"></i> Add Entry
+        </button>
+
+        <div class="table-container">
+            <table id="transactionTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Currency</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionList"></tbody>
+            </table>
+        </div>
+
+        <!-- Add Entry Modal -->
+        <div id="addEntryModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Add New Entry</h5>
+                    <span class="close">&times;</span>
+                </div>
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" id="description" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="currency">Currency:</label>
+                        <select id="currency" class="form-control" required>
+                            <option value="">Select Currency</option>
+                            <option value="AFN">AFN</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Type:</label>
+                        <select id="type" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="rec">Received</option>
+                            <option value="send">Sent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Amount:</label>
+                        <input type="number" id="amount" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save Entry</button>
+                        <button type="button" class="btn btn-secondary close">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data from localStorage
+        const customerId = '1734705657046';
+        const customerName = 'بیت الله';
+        let transactions = JSON.parse(localStorage.getItem(`transactions_money_${customerId}`)) || [];
+
+        // DOM Elements
+        const addEntryBtn = document.getElementById('addEntryBtn');
+        const addEntryModal = document.getElementById('addEntryModal');
+        const entryForm = document.getElementById('entryForm');
+        const closeButtons = document.querySelectorAll('.close');
+        const amountInput = document.getElementById('amount');
+
+        // Set today's date as default
+        document.getElementById('date').valueAsDate = new Date();
+
+        // Show modal
+        addEntryBtn.addEventListener('click', () => {
+            addEntryModal.style.display = 'block';
+            document.getElementById('date').valueAsDate = new Date();
+            entryForm.reset();
+        });
+
+        // Close modal
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                addEntryModal.style.display = 'none';
+                entryForm.reset();
+                delete entryForm.dataset.editId;
+                entryForm.querySelector('button[type="submit"]').textContent = 'Save Entry';
+            });
+        });
+
+        // Edit transaction
+        function editTransaction(id) {
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+
+            // Fill the form with transaction data
+            document.getElementById('date').value = transaction.date;
+            document.getElementById('description').value = transaction.description;
+            document.getElementById('currency').value = transaction.currency;
+            document.getElementById('type').value = transaction.type;
+            document.getElementById('amount').value = transaction.amount;
+
+            // Show modal in edit mode
+            addEntryModal.style.display = 'block';
+            const submitBtn = entryForm.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Update Entry';
+            
+            // Store the ID being edited
+            entryForm.dataset.editId = id;
+        }
+
+        // Handle form submission
+        entryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const transaction = {
+                id: entryForm.dataset.editId ? parseInt(entryForm.dataset.editId) : Date.now(),
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value,
+                currency: document.getElementById('currency').value,
+                type: document.getElementById('type').value,
+                amount: parseFloat(amountInput.value)
+            };
+
+            if (entryForm.dataset.editId) {
+                // Update existing transaction
+                const index = transactions.findIndex(t => t.id === parseInt(entryForm.dataset.editId));
+                if (index !== -1) {
+                    transactions[index] = transaction;
+                }
+                showNotification('Entry updated successfully!', 'success');
+            } else {
+                // Add new transaction
+                transactions.push(transaction);
+                showNotification('Entry added successfully!', 'success');
+            }
+
+            localStorage.setItem(`transactions_money_${customerId}`, JSON.stringify(transactions));
+            renderTransactions();
+            addEntryModal.style.display = 'none';
+            entryForm.reset();
+            delete entryForm.dataset.editId;
+            entryForm.querySelector('button[type="submit"]').textContent = 'Save Entry';
+        });
+
+        // Delete transaction
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this entry?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                localStorage.setItem(`transactions_money_${customerId}`, JSON.stringify(transactions));
+                renderTransactions();
+                showNotification('Entry deleted successfully!', 'success');
+            }
+        }
+
+        // Render transactions
+        function renderTransactions() {
+            const transactionList = document.getElementById('transactionList');
+            transactionList.innerHTML = '';
+            
+            let totalRecAFN = 0;
+            let totalRecUSD = 0;
+            let totalSendAFN = 0;
+            let totalSendUSD = 0;
+
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(transaction => {
+                if (transaction.type === 'rec') {
+                    if (transaction.currency === 'AFN') totalRecAFN += transaction.amount;
+                    if (transaction.currency === 'USD') totalRecUSD += transaction.amount;
+                }
+                if (transaction.type === 'send') {
+                    if (transaction.currency === 'AFN') totalSendAFN += transaction.amount;
+                    if (transaction.currency === 'USD') totalSendUSD += transaction.amount;
+                }
+
+                const row = document.createElement('tr');
+                row.className = `transaction-row ${transaction.type}`;
+                row.innerHTML = `
+                    <td>${new Date(transaction.date).toLocaleDateString()}</td>
+                    <td>${transaction.description}</td>
+                    <td>${transaction.currency}</td>
+                    <td class="type-${transaction.type}">${transaction.type === 'rec' ? 'Received' : 'Sent'}</td>
+                    <td>${transaction.amount.toFixed(2)}</td>
+                    <td>
+                        <button onclick="editTransaction(${transaction.id})" class="btn btn-success btn-sm" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button onclick="deleteTransaction(${transaction.id})" class="btn btn-danger btn-sm" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                transactionList.appendChild(row);
+                
+                // Add animation
+                requestAnimationFrame(() => {
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateX(0)';
+                });
+            });
+
+            // Update summary
+            document.getElementById('totalReceivedAFN').textContent = totalRecAFN.toFixed(2);
+            document.getElementById('totalReceivedUSD').textContent = totalRecUSD.toFixed(2);
+            document.getElementById('totalSentAFN').textContent = totalSendAFN.toFixed(2);
+            document.getElementById('totalSentUSD').textContent = totalSendUSD.toFixed(2);
+            document.getElementById('balanceAFN').textContent = (totalRecAFN - totalSendAFN).toFixed(2);
+            document.getElementById('balanceUSD').textContent = (totalRecUSD - totalSendUSD).toFixed(2);
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initial render
+        renderTransactions();
+    </script>
+</body>
+</html>
