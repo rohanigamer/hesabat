@@ -6,16 +6,26 @@ const path = require('path');
 const app = express();
 
 // Replace with your MongoDB connection string
-const MONGODB_URI = 'mongodb+srv://rohani:rohani2024%2F2%2F8@cluster0.2ywo8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = 'mongodb+srv://rohani:rohani2024%2F2%2F8@cluster0.2ywo8.mongodb.net/hesabat?retryWrites=true&w=majority';
 
 // Middleware
 app.use(cors({
-    origin: ['https://your-github-username.github.io', 'http://localhost:3001'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type']
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        message: 'Something went wrong!',
+        error: err.message 
+    });
+});
 
 // MongoDB Schemas
 const customerSchema = new mongoose.Schema({
@@ -107,16 +117,20 @@ app.post('/api/money-transactions', async (req, res) => {
 // Port configuration
 const PORT = process.env.PORT || 3001;
 
-// MongoDB Connection
-mongoose.connect(MONGODB_URI)
-  .then(() => {
+// MongoDB Connection with better error handling
+mongoose.connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000 // 5 second timeout
+})
+.then(() => {
     console.log('Connected to MongoDB');
     // Start server only after successful database connection
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT}`);
+        console.log(`Server running on port ${PORT}`);
     });
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
+})
+.catch(err => {
+    console.error('MongoDB connection error:', err.message);
     process.exit(1);
-  });
+});

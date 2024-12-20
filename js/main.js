@@ -161,25 +161,44 @@ function loadData() {
 }
 
 // API functions for MongoDB
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3001/api'
-    : 'https://hesabat.onrender.com/api'; // Your Render.com URL
+const API_URL = 'https://hesabat.onrender.com/api';
 
 // Customer functions
 async function saveCustomer(customer) {
-    const response = await fetch(`${API_URL}/customers`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(customer)
-    });
-    return await response.json();
+    try {
+        const response = await fetch(`${API_URL}/customers`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(customer)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error saving customer:', error);
+        alert('Error creating customer: ' + error.message);
+        throw error;
+    }
 }
 
 async function getCustomers() {
-    const response = await fetch(`${API_URL}/customers`);
-    return await response.json();
+    try {
+        const response = await fetch(`${API_URL}/customers`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        alert('Error loading customers: ' + error.message);
+        throw error;
+    }
 }
 
 // Transaction functions
