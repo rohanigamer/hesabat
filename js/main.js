@@ -166,37 +166,63 @@ const API_URL = 'https://hesabat.onrender.com/api';
 // Customer functions
 async function saveCustomer(customer) {
     try {
+        console.log('Attempting to save customer:', customer);
+        console.log('API URL:', API_URL);
+        
         const response = await fetch(`${API_URL}/customers`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
+            mode: 'cors',
             body: JSON.stringify(customer)
         });
         
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Server response:', errorText);
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
+        console.log('Customer saved successfully:', data);
         return data;
     } catch (error) {
         console.error('Error saving customer:', error);
-        alert('Error creating customer: ' + error.message);
+        alert(`Error creating customer: ${error.message}\nPlease check console for details.`);
         throw error;
     }
 }
 
 async function getCustomers() {
     try {
-        const response = await fetch(`${API_URL}/customers`);
+        console.log('Fetching customers from:', `${API_URL}/customers`);
+        
+        const response = await fetch(`${API_URL}/customers`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            mode: 'cors'
+        });
+        
+        console.log('Get customers response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Server response:', errorText);
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
         }
-        return await response.json();
+        
+        const data = await response.json();
+        console.log('Customers fetched successfully:', data);
+        return data;
     } catch (error) {
         console.error('Error fetching customers:', error);
-        alert('Error loading customers: ' + error.message);
+        alert(`Error loading customers: ${error.message}\nPlease check console for details.`);
         throw error;
     }
 }

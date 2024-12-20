@@ -57,22 +57,29 @@ const Transaction = mongoose.model('Transaction', transactionSchema);
 const MoneyTransaction = mongoose.model('MoneyTransaction', moneyTransactionSchema);
 
 // API Routes
-app.get('/api/customers', async (req, res) => {
+// Customer routes
+app.post('/api/customers', async (req, res) => {
     try {
-        const customers = await Customer.find();
-        res.json(customers);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.log('Received customer creation request:', req.body);
+        const customer = new Customer(req.body);
+        const savedCustomer = await customer.save();
+        console.log('Customer saved successfully:', savedCustomer);
+        res.json(savedCustomer);
+    } catch (error) {
+        console.error('Error creating customer:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-app.post('/api/customers', async (req, res) => {
+app.get('/api/customers', async (req, res) => {
     try {
-        const customer = new Customer(req.body);
-        await customer.save();
-        res.status(201).json(customer);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.log('Received request to fetch all customers');
+        const customers = await Customer.find();
+        console.log(`Found ${customers.length} customers`);
+        res.json(customers);
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
