@@ -1,0 +1,32 @@
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE Files
+.windsurf/
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Files
+.env
+*.log
+
+# Windows specific
+AppData/
+$RECYCLE.BIN/
+System Volume Information/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Local development
+.vs/
+.history/
