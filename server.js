@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 
 // Replace with your MongoDB connection string
-const MONGODB_URI = 'mongodb+srv://rohani:rohani2024/2/8@cluster0.2ywo8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = 'mongodb+srv://rohani:rohani2024%2F2%2F8@cluster0.2ywo8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 // Middleware
 app.use(cors({
@@ -16,11 +16,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
-
-// MongoDB Connection
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
 
 // MongoDB Schemas
 const customerSchema = new mongoose.Schema({
@@ -110,9 +105,18 @@ app.post('/api/money-transactions', async (req, res) => {
 });
 
 // Port configuration
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3001;
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// MongoDB Connection
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('Connected to MongoDB');
+    // Start server only after successful database connection
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
