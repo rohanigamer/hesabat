@@ -4,7 +4,6 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // Replace with your MongoDB connection string
 const MONGODB_URI = 'mongodb+srv://rohani:rohani2024/2/8@cluster0.2ywo8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
@@ -110,7 +109,10 @@ app.post('/api/money-transactions', async (req, res) => {
     }
 });
 
+// Port configuration
+const PORT = process.env.PORT;
+
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
