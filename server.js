@@ -10,7 +10,11 @@ const PORT = process.env.PORT || 3001;
 const MONGODB_URI = 'mongodb+srv://rohani:rohani2024/2/8@cluster0.2ywo8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['https://your-github-username.github.io', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -107,6 +111,6 @@ app.post('/api/money-transactions', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
